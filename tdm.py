@@ -15,7 +15,7 @@ def setup():
     curses.noecho()
     curses.cbreak()
     stdscr.keypad(1)
-    for x in range(1,16):
+    for x in range(1, 16):
         curses.init_pair(x, x, -1)
     curses.init_pair(16, 1, 4)
     return stdscr
@@ -43,18 +43,18 @@ def main(stdscr):
         t = time.time()
 
         if t >= last_update + 30.0 or c == ord('r'):
-            items = lookup(drawer)
+            lookup(drawer)
             draw(drawer)
             last_update = time.time()
-        
+
         if c == curses.KEY_LEFT:
             drawer.update_cursor(0, -1)
             draw(drawer)
 
-        if c == curses.KEY_RIGHT:            
-            drawer.update_cursor(0,1)
+        if c == curses.KEY_RIGHT:
+            drawer.update_cursor(0, 1)
             draw(drawer)
-        
+
         if c == ord('j'):
             drawer.update_cursor(1, 0)
             draw(drawer)
@@ -66,7 +66,7 @@ def main(stdscr):
         if c == curses.KEY_ENTER:
             item = drawer.items[drawer.cursor[0]]
             subprocess.call(['vim', '+%s' % item[3], item[2]])
-        
+
         if c == ord('q'):
             quitting_time = True
             continue
