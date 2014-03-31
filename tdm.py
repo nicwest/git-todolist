@@ -1,12 +1,13 @@
 import curses
 import traceback
 import time
+import subprocess
 
 from finder import get_list
 from drawer import Drawer
 
 
-def setup(debug):
+def setup():
     curses.setupterm()
     stdscr = curses.initscr()
     curses.start_color()
@@ -14,12 +15,19 @@ def setup(debug):
     curses.noecho()
     curses.cbreak()
     stdscr.keypad(1)
-    return stdscr, debug
+    for x in range(1,16):
+        curses.init_pair(x, x, -1)
+    curses.init_pair(16, 1, 4)
+    return stdscr
 
 
-def lookup_and_draw(stdscr, drawer):
-    items, not_items = get_list('./test_data')
+def lookup(drawer):
+    items, not_items = get_list('./')
     drawer.items = items
+    drawer.get_max()
+
+
+def draw(drawer):
     drawer.draw_items()
 
 
@@ -28,22 +36,36 @@ def main(stdscr):
     start_time = time.time()
     last_update = time.time()
     drawer = Drawer(stdscr, [])
-    lookup_and_draw(stdscr, drawer)
+    lookup(drawer)
+    draw(drawer)
     while not quitting_time:
         c = stdscr.getch()
         t = time.time()
 
         if t >= last_update + 30.0 or c == ord('r'):
-            lookup_and_draw(stdscr, drawer)
+            items = lookup(drawer)
+            draw(drawer)
             last_update = time.time()
         
-        if c == ord('h'):
-            drawer.cursor = (drawer.cursor[0], drawer.cursor[1]-1)
-            lookup_and_draw(stdscr, drawer)
+        if c == curses.KEY_LEFT:
+            drawer.update_cursor(0, -1)
+            draw(drawer)
 
-        if c == ord('l'):
-            drawer.cursor = (drawer.cursor[0], drawer.cursor[1]+1)
-            lookup_and_draw(stdscr, drawer)
+        if c == curses.KEY_RIGHT:            
+            drawer.update_cursor(0,1)
+            draw(drawer)
+        
+        if c == ord('j'):
+            drawer.update_cursor(1, 0)
+            draw(drawer)
+
+        if c == ord('k'):
+            drawer.update_cursor(-1, 0)
+            draw(drawer)
+
+        if c == curses.KEY_ENTER:
+            item = drawer.items[drawer.cursor[0]]
+            subprocess.call(['vim', '+%s' % item[3], item[2]])
         
         if c == ord('q'):
             quitting_time = True
@@ -57,12 +79,10 @@ def clean_up(stdscr):
     curses.endwin()
 
 if __name__ == "__main__":
-    debug = "TROLOLWOLWOLWOL!!!!"
-    stdscr, debug = setup(debug)   # setup curses etc
+    stdscr = setup()   # setup curses etc
     try:
         main(stdscr)       # m..m..m.m.MAIN LOOP!
     except:
         clean_up(stdscr)
         traceback.print_exc()
     clean_up(stdscr)   # kill our screen go back to normal
-    print debug

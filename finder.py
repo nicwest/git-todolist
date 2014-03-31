@@ -60,10 +60,10 @@ def get_list(target_folder):
             continue
         ext = os.path.splitext(fn)[1]
         language = get_language(ext)
-        item_match = re.search('(TODO|FIXME):(.*?)$', cnt)
+        item_match = re.search('(TODO|FIXME)([\s\-:;\.]+)?(.*?)$', cnt)
         item_type = item_match.group(1) if item_match else ''
         item_desc = clean_description(
-            item_match.group(2) if item_match else '')
+            item_match.group(3) if item_match else '')
         degrepped.append(
             (p, fn, fp, ln, cnt.strip(), language, item_type, item_desc))
 
